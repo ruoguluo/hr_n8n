@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Client Registration & PDF Upload</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; min-height: 100vh; }
+    .container { max-width: 400px; margin: 2rem auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #0001; padding: 2rem; }
+    h2 { text-align: center; color: #333; }
+    label { display: block; margin: 1rem 0 0.2rem 0; }
+    input, button { width: 100%; padding: 0.7rem; margin-bottom: 1rem; border: 1px solid #bbb; border-radius: 4px; }
+    button { background: #1976d2; color: #fff; border: none; cursor: pointer; font-weight: 600; }
+    button:disabled { background: #bbb; }
+    .hidden { display: none; }
+    .result, .error { margin-top: 1rem; padding: 1rem; border-radius: 5px; }
+    .result { background: #e8f5e9; color: #388e3c; }
+    .error { background: #ffebee; color: #d32f2f; }
+    .progress-header { margin-bottom: 2rem; }
+    .progress-steps { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .step { display: flex; align-items: center; flex: 1; }
+    .step-number { width: 30px; height: 30px; border-radius: 50%; background: #ddd; color: #666; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+    .step.active .step-number { background: #1976d2; color: white; }
+    .step.completed .step-number { background: #4caf50; color: white; }
+    .step-text { font-size: 0.9rem; color: #666; }
+    .step.active .step-text { color: #1976d2; font-weight: 600; }
+    .step.completed .step-text { color: #4caf50; }
+    .progress-line { height: 2px; background: #ddd; flex: 1; margin: 0 10px; }
+    .progress-line.completed { background: #4caf50; }
+    @media (max-width: 450px) {
+      .container { padding: 1rem; }
+      h2 { font-size: 1.3rem; }
+      .progress-steps { flex-direction: column; gap: 10px; }
+      .progress-line { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="progress-header">
+      <div class="progress-steps">
+        <div class="step active" id="step1">
+          <div class="step-number">1</div>
+          <div class="step-text">Company Registration</div>
+        </div>
+        <div class="progress-line" id="progressLine"></div>
+        <div class="step" id="step2">
+           <div class="step-number">2</div>
+           <div class="step-text">Upload JD</div>
+         </div>
+      </div>
+    </div>
+    <form id="infoForm">
+      <h2>Company Registration</h2>
+      <label>Company Name</label>
+      <input name="company_name" required>
+      <label>Website</label>
+      <input name="website" type="url" required>
+      <label>Contact Person</label>
+      <input name="contact_person" required>
+      <label>Contact Number</label>
+      <input name="contact_number" type="tel" required>
+      <button type="submit">Submit</button>
+      <div id="infoError" class="error hidden"></div>
+    </form>
+
+    <form id="uploadForm" class="hidden" enctype="multipart/form-data">
+      <h2>Upload JD</h2>
+      <input type="file" name="pdf" accept="application/pdf" required>
+      <input type="hidden" name="client_id" id="client_id">
+      <button type="submit">Upload JD in PDF Format</button>
+      <div id="uploadError" class="error hidden"></div>
+      <div id="pdfResult" class="result hidden"></div>
+    </form>
+  </div>
+
+  <script>
+    // === CONFIG: Replace with your n8n webhook URLs! ===
+    const WEBHOOK_INFO = 'http://107.182.26.178:5678/webhook/50a10b2d-8744-4594-a970-8f1c6c5a997e';
+    const WEBHOOK_PDF  = 'http://107.182.26.178:5678/webhook/39e31a92-4f74-4380-b480-4c997a6d01aa';
+
+    // --- Step 1: Company Info ---
+    const infoForm = document.getElementById('infoForm');
+    const infoError = document.getElementById('infoError');
+    const uploadForm = document.getElementById('uploadForm');
+    const clientIdInput = document.getElementById('client_id');
+
+    infoForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      infoError.classList.add('hidden');
+      infoForm.querySelector('button').disabled = true;
+      const formData = new FormData(infoForm);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        let res = await fetch(WEBHOOK_INFO, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        let result = await res.json();
+
+        if (!res.ok || !result.client_id) throw new Error(result.message || "Registration failed.");
+        // Show PDF upload, hide info form
+        infoForm.classList.add('hidden');
+        uploadForm.classList.remove('hidden');
+        clientIdInput.value = result.client_id;
+        
+        // Update progress indicators
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step1').classList.add('completed');
+        document.getElementById('step2').classList.add('active');
+        document.getElementById('progressLine').classList.add('completed');
+        
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      } catch (err) {
+        infoError.textContent = err.message;
+        infoError.classList.remove('hidden');
+      } finally {
+        infoForm.querySelector('button').disabled = false;
+      }
+    });
+
+    // --- Step 2: PDF Upload ---
+    const uploadError = document.getElementById('uploadError');
+    const pdfResult = document.getElementById('pdfResult');
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      uploadError.classList.add('hidden');
+      pdfResult.classList.add('hidden');
+      uploadForm.querySelector('button').disabled = true;
+
+      const formData = new FormData(uploadForm);
+
+      try {
+        let res = await fetch(WEBHOOK_PDF, {
+          method: 'POST',
+          body: formData,
+        });
+        let result = await res.json();
+
+        if (!res.ok) throw new Error(result.message || "PDF processing failed.");
+        
+        // Extract and display the Feedback HTML content
+        if (result.data) {
+          pdfResult.innerHTML = result.data;
+        } else {
+          pdfResult.textContent = typeof result === "object" ? JSON.stringify(result, null, 2) : result;
+        }
+        pdfResult.classList.remove('hidden');
+      } catch (err) {
+        uploadError.textContent = err.message;
+        uploadError.classList.remove('hidden');
+      } finally {
+        uploadForm.querySelector('button').disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
