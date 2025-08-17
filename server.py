@@ -5,7 +5,7 @@ import os
 import sys
 
 # Configuration
-PORT = 8000
+PORT = 8001
 DIRECTORY = "html"
 
 class Handler(http.server.SimpleHTTPRequestHandler):
