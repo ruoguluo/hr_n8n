@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Position Information Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container { max-width: 600px; margin: 0 auto; padding: 2rem; }
+    .progress-header { margin-bottom: 2rem; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .progress-steps { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .step { display: flex; align-items: center; flex: 1; }
+    .step-number { width: 30px; height: 30px; border-radius: 50%; background: #ddd; color: #666; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+    .step.active .step-number { background: #1976d2; color: white; }
+    .step.completed .step-number { background: #4caf50; color: white; }
+    .step-text { font-size: 0.9rem; color: #666; }
+    .step.active .step-text { color: #1976d2; font-weight: 600; }
+    .step.completed .step-text { color: #4caf50; }
+    .progress-line { height: 2px; background: #ddd; flex: 1; margin: 0 10px; }
+    .progress-line.completed { background: #4caf50; }
+    @media (max-width: 450px) {
+      .container { padding: 1rem; }
+      .progress-steps { flex-direction: column; gap: 10px; }
+      .progress-line { display: none; }
+    }
+    form {
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #333;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+    .hidden {
+      display: none;
+    }
+    button {
+      margin-top: 20px;
+      background: #007bff;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="progress-header">
+      <div class="progress-steps">
+        <div class="step completed">
+          <div class="step-number">1</div>
+          <div class="step-text">Company Registration</div>
+        </div>
+        <div class="progress-line completed"></div>
+        <div class="step completed">
+          <div class="step-number">2</div>
+          <div class="step-text">Upload JD</div>
+        </div>
+        <div class="progress-line completed"></div>
+        <div class="step active">
+          <div class="step-number">3</div>
+          <div class="step-text">Create JD Form</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <form id="positionForm">
+    <h2>Position Information Form</h2>
+
+    <!-- 1. Location -->
+    <label for="location">1. Location of the position</label>
+    <input type="text" id="location" name="location" required>
+
+    <!-- 2. Team Structure -->
+    <label for="team">2. Team structure/size, line managers, number of subordinates</label>
+    <textarea id="team" name="team"></textarea>
+
+    <!-- 3. Position Type -->
+    <label for="positionType">3. Position type</label>
+    <select id="positionType" name="positionType" required>
+      <option value="">-- Select --</option>
+      <option value="new">New</option>
+      <option value="replacement">Replacement</option>
+    </select>
+
+    <!-- New: Reason -->
+    <div id="newFields" class="hidden">
+      <label for="newReason">Reason (for new position)</label>
+      <textarea id="newReason" name="newReason"></textarea>
+    </div>
+
+    <!-- Replacement Fields -->
+    <div id="replacementFields" class="hidden">
+      <label for="reasonLeave">Reason of leave of the last person</label>
+      <textarea id="reasonLeave" name="reasonLeave"></textarea>
+
+      <label for="backgroundLast">Background of the last person</label>
+      <textarea id="backgroundLast" name="backgroundLast"></textarea>
+
+      <label for="complimentsConcerns">Compliments or concerns of the last person</label>
+      <textarea id="complimentsConcerns" name="complimentsConcerns"></textarea>
+    </div>
+
+    <!-- 4. Hiring History -->
+    <label for="hiringWhen">4a. Hiring History - When to open</label>
+    <input type="text" id="hiringWhen" name="hiringWhen">
+
+    <label for="hiringProblems">4b. Problems of the last interviews</label>
+    <textarea id="hiringProblems" name="hiringProblems"></textarea>
+
+    <!-- 5. Emergency Level -->
+    <label for="emergency">5. Emergency levels</label>
+    <select id="emergency" name="emergency">
+      <option value="">-- Select --</option>
+      <option value="low">Low</option>
+      <option value="medium">Medium</option>
+      <option value="high">High</option>
+      <option value="critical">Critical</option>
+    </select>
+
+    <!-- 6. Interview Rounds -->
+    <label for="interview">6. Interview rounds, interviewers (name, title, bio)</label>
+    <textarea id="interview" name="interview"></textarea>
+
+    <!-- 7. Compensation -->
+    <label for="compensation">7. Compensation structure, salary range</label>
+    <textarea id="compensation" name="compensation"></textarea>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    const positionType = document.getElementById("positionType");
+    const newFields = document.getElementById("newFields");
+    const replacementFields = document.getElementById("replacementFields");
+
+    positionType.addEventListener("change", function() {
+      if (this.value === "new") {
+        newFields.classList.remove("hidden");
+        replacementFields.classList.add("hidden");
+      } else if (this.value === "replacement") {
+        replacementFields.classList.remove("hidden");
+        newFields.classList.add("hidden");
+      } else {
+        newFields.classList.add("hidden");
+        replacementFields.classList.add("hidden");
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -27,6 +27,8 @@
     .step.completed .step-text { color: #4caf50; }
     .progress-line { height: 2px; background: #ddd; flex: 1; margin: 0 10px; }
     .progress-line.completed { background: #4caf50; }
+    #nextButton { margin-top: 15px; padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    #nextButton:hover { background: #218838; }
     @media (max-width: 450px) {
       .container { padding: 1rem; }
       h2 { font-size: 1.3rem; }
@@ -71,13 +73,14 @@
       <button type="submit">Upload JD in PDF Format</button>
       <div id="uploadError" class="error hidden"></div>
       <div id="pdfResult" class="result hidden"></div>
+      <button id="nextButton" class="hidden" onclick="navigateToJDForm()">Next: Create JD Form</button>
     </form>
   </div>
 
   <script>
     // === CONFIG: Replace with your n8n webhook URLs! ===
     const WEBHOOK_INFO = 'http://107.182.26.178:5678/webhook/50a10b2d-8744-4594-a970-8f1c6c5a997e';
-    const WEBHOOK_PDF  = 'http://107.182.26.178:5678/webhook/39e31a92-4f74-4380-b480-4c997a6d01aa';
+    const WEBHOOK_PDF  = 'http://107.182.26.178:5678/webhook-test/39e31a92-4f74-4380-b480-4c997a6d01aa';
 
     // --- Step 1: Company Info ---
     const infoForm = document.getElementById('infoForm');
@@ -141,13 +144,26 @@
 
         if (!res.ok) throw new Error(result.message || "PDF processing failed.");
         
-        // Extract and display the Feedback HTML content
-        if (result.data) {
-          pdfResult.innerHTML = result.data;
+        // Extract and display the Location value from JSON response
+        if (result.Feedback) {
+          try {
+            const feedbackData = JSON.parse(result.Feedback);
+            console.log('Parsed feedbackData:', feedbackData);
+            // Store feedbackData globally for navigation
+            globalFeedbackData = feedbackData;
+            if (feedbackData.Location) {
+              pdfResult.textContent = feedbackData.Location;
+            } else {
+              pdfResult.textContent = "Feedback: " + JSON.stringify(feedbackData, null, 2);
+            }
+          } catch (e) {
+            pdfResult.textContent = result.Feedback;
+          }
         } else {
           pdfResult.textContent = typeof result === "object" ? JSON.stringify(result, null, 2) : result;
         }
         pdfResult.classList.remove('hidden');
+        document.getElementById('nextButton').classList.remove('hidden');
       } catch (err) {
         uploadError.textContent = err.message;
         uploadError.classList.remove('hidden');
@@ -155,6 +171,18 @@
         uploadForm.querySelector('button').disabled = false;
       }
     });
+
+    // Global variable to store feedbackData
+    let globalFeedbackData = null;
+
+    function navigateToJDForm() {
+      if (globalFeedbackData) {
+        // Store feedbackData in localStorage for the next page
+        localStorage.setItem('feedbackData', JSON.stringify(globalFeedbackData));
+      }
+      // Navigate to jd_form.html
+      window.location.href = 'jd_form.html';
+    }
   </script>
 </body>
 </html>
