@@ -1,0 +1,323 @@
+{
+  "name": "HR_JD_Upload",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "39e31a92-4f74-4380-b480-4c997a6d01aa",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        112
+      ],
+      "id": "e8666764-a41a-4be6-a8dc-9bed73ec33fd",
+      "name": "Webhook",
+      "webhookId": "39e31a92-4f74-4380-b480-4c997a6d01aa"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "jd_doc",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        192,
+        256
+      ],
+      "id": "07c43fa0-2697-4cb6-8d75-76b0f10035da",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "df306bda-4094-47be-b387-c5dbb160b5b7",
+              "name": "text",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        64
+      ],
+      "id": "96ac2f35-f6ec-40af-9d92-207eb9c4121c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Check in {{ $json.text }}\n\nif there is the following information is included:\n\n1. Location of the position\n\n2. Team structure/size, line managers, number of subordinates\n\n3. Position type: New or Replacement\n\nNew: Reason\nReplacement:\nReason of leave of the last person\nBackground of the last person\nCompliments or concerns of the last person\n4. Hiring History\na) When to open\nb) Problems of the last interviews (the system would generate the list for client to tick)\n\n5. Emergency levels\n\n6. Interview rounds, interviewers (name, title, bio)\n\n7. Compensation structure, salary range\n\nI want you to output in this json format:\n\n{\n\"Location\":$location\n}\n}\n\nno other description is needed, just a json string",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "034d4d0c-5a11-49dc-bf3c-f07c9fdfef3b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        624,
+        208
+      ],
+      "id": "dd42ebd2-8715-4c6e-abaa-bda64e54fdc1",
+      "name": "DeepSeek Chat Model1",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "bDfDHdHjCHIsrI6q",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1f1fc99-125a-4aa1-a61a-97466a149754",
+              "name": "Feedback",
+              "value": "={{ $json.output.replaceAll('`','').replaceAll('json','').replaceAll('\\n','') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        0
+      ],
+      "id": "e1e3d3d7-32d8-4bbd-9f46-1cfab93292fc",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "557fe0ba-b84a-444f-b5a6-3d97c43a7c14",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $binary.jd_doc.mimeType }}",
+                    "rightValue": "=text/plain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f3eb51fe-da08-4812-b7c2-3d32a07d08fa"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d8e7763c-db52-40ce-a838-36b484249afe",
+                    "leftValue": "={{ $binary.jd_doc.mimeType }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf"
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": false
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -64,
+        112
+      ],
+      "id": "36c02a1c-afc3-4895-b3e2-ba939383fbcc",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "jd_doc",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -48
+      ],
+      "id": "cdd74b60-235f-47b5-b446-e9ac09f52a6d",
+      "name": "Extract from File1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "41bd6ea5-5c9a-4939-a8f8-f6b560ec6e46",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5feba11a2f868160984afc62b4121f7813ad87b417e1b49be74048033c3b4f53"
+  },
+  "id": "E3OmKYlsBQ4aXBbt",
+  "tags": []
+}

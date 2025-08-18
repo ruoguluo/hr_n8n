@@ -29,6 +29,14 @@
     .progress-line.completed { background: #4caf50; }
     #nextButton { margin-top: 15px; padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
     #nextButton:hover { background: #218838; }
+    /* JD Form Styles */
+    #jdForm { max-width: 700px; margin: 2rem auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    #jdForm h2 { text-align: center; color: #333; }
+    #jdForm label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
+    #jdForm input, #jdForm textarea, #jdForm select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    #jdForm textarea { resize: vertical; min-height: 70px; }
+    #jdForm button { margin-top: 20px; background: #007bff; color: white; padding: 10px 18px; border: none; border-radius: 4px; cursor: pointer; }
+    #jdForm button:hover { background: #0056b3; }
     @media (max-width: 450px) {
       .container { padding: 1rem; }
       h2 { font-size: 1.3rem; }
@@ -50,6 +58,11 @@
            <div class="step-number">2</div>
            <div class="step-text">Upload JD</div>
          </div>
+        <div class="progress-line" id="progressLine2"></div>
+        <div class="step" id="step3">
+          <div class="step-number">3</div>
+          <div class="step-text">Create JD Form</div>
+        </div>
       </div>
     </div>
     <form id="infoForm">
@@ -68,12 +81,77 @@
 
     <form id="uploadForm" class="hidden" enctype="multipart/form-data">
       <h2>Upload JD</h2>
-      <input type="file" name="pdf" accept="application/pdf" required>
+      <input type="file" name="jd_doc" accept="application/pdf,text/plain" required>
       <input type="hidden" name="client_id" id="client_id">
-      <button type="submit">Upload JD in PDF Format</button>
+      <button type="submit">Upload JD (PDF or TXT)</button>
       <div id="uploadError" class="error hidden"></div>
       <div id="pdfResult" class="result hidden"></div>
-      <button id="nextButton" class="hidden" onclick="navigateToJDForm()">Next: Create JD Form</button>
+      <button id="nextButton" class="hidden" onclick="showJDForm()">Next: Create JD Form</button>
+    </form>
+
+    <form id="jdForm" class="hidden">
+      <h2>Position Information Form</h2>
+
+      <!-- 1. Location -->
+      <label for="location">1. Location of the position</label>
+      <input type="text" id="location" name="location" required>
+
+      <!-- 2. Team Structure -->
+      <label for="team">2. Team structure/size, line managers, number of subordinates</label>
+      <textarea id="team" name="team"></textarea>
+
+      <!-- 3. Position Type -->
+      <label for="positionType">3. Position type</label>
+      <select id="positionType" name="positionType" required>
+        <option value="">-- Select --</option>
+        <option value="new">New</option>
+        <option value="replacement">Replacement</option>
+      </select>
+
+      <!-- New: Reason -->
+      <div id="newFields" class="hidden">
+        <label for="newReason">Reason (for new position)</label>
+        <textarea id="newReason" name="newReason"></textarea>
+      </div>
+
+      <!-- Replacement Fields -->
+      <div id="replacementFields" class="hidden">
+        <label for="reasonLeave">Reason of leave of the last person</label>
+        <textarea id="reasonLeave" name="reasonLeave"></textarea>
+
+        <label for="backgroundLast">Background of the last person</label>
+        <textarea id="backgroundLast" name="backgroundLast"></textarea>
+
+        <label for="complimentsConcerns">Compliments or concerns of the last person</label>
+        <textarea id="complimentsConcerns" name="complimentsConcerns"></textarea>
+      </div>
+
+      <!-- 4. Hiring History -->
+      <label for="hiringWhen">4a. Hiring History - When to open</label>
+      <input type="text" id="hiringWhen" name="hiringWhen">
+
+      <label for="hiringProblems">4b. Problems of the last interviews</label>
+      <textarea id="hiringProblems" name="hiringProblems"></textarea>
+
+      <!-- 5. Emergency Level -->
+      <label for="emergency">5. Emergency levels</label>
+      <select id="emergency" name="emergency">
+        <option value="">-- Select --</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+        <option value="critical">Critical</option>
+      </select>
+
+      <!-- 6. Interview Rounds -->
+      <label for="interview">6. Interview rounds, interviewers (name, title, bio)</label>
+      <textarea id="interview" name="interview"></textarea>
+
+      <!-- 7. Compensation -->
+      <label for="compensation">7. Compensation structure, salary range</label>
+      <textarea id="compensation" name="compensation"></textarea>
+
+      <button type="submit">Submit</button>
     </form>
   </div>
 
@@ -152,7 +230,7 @@
             // Store feedbackData globally for navigation
             globalFeedbackData = feedbackData;
             if (feedbackData.Location) {
-              pdfResult.textContent = feedbackData.Location;
+              pdfResult.textContent = "Location: " + feedbackData.Location;
             } else {
               pdfResult.textContent = "Feedback: " + JSON.stringify(feedbackData, null, 2);
             }
@@ -175,14 +253,44 @@
     // Global variable to store feedbackData
     let globalFeedbackData = null;
 
-    function navigateToJDForm() {
-      if (globalFeedbackData) {
-        // Store feedbackData in localStorage for the next page
-        localStorage.setItem('feedbackData', JSON.stringify(globalFeedbackData));
+    function showJDForm() {
+      // Hide upload form and show JD form
+      uploadForm.classList.add('hidden');
+      document.getElementById('jdForm').classList.remove('hidden');
+      
+      // Update progress indicators
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step2').classList.add('completed');
+      document.getElementById('step3').classList.add('active');
+      document.getElementById('progressLine2').classList.add('completed');
+      
+      // Pre-fill location if available from feedbackData
+      if (globalFeedbackData && globalFeedbackData.Location) {
+        document.getElementById('location').value = globalFeedbackData.Location;
       }
-      // Navigate to jd_form.html
-      window.location.href = 'jd_form.html';
+      
+      window.scrollTo({top: 0, behavior: 'smooth'});
     }
+
+    // JD Form position type handler
+     document.addEventListener('DOMContentLoaded', function() {
+       const positionType = document.getElementById("positionType");
+       const newFields = document.getElementById("newFields");
+       const replacementFields = document.getElementById("replacementFields");
+
+       positionType.addEventListener("change", function() {
+         if (this.value === "new") {
+           newFields.classList.remove("hidden");
+           replacementFields.classList.add("hidden");
+         } else if (this.value === "replacement") {
+           replacementFields.classList.remove("hidden");
+           newFields.classList.add("hidden");
+         } else {
+           newFields.classList.add("hidden");
+           replacementFields.classList.add("hidden");
+         }
+       });
+     });
   </script>
 </body>
 </html>
