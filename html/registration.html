@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Client Registration & PDF Upload</title>
+  <title>Company Registration - HR JD System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body { font-family: system-ui, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; min-height: 100vh; }
@@ -16,55 +16,20 @@
     .result, .error { margin-top: 1rem; padding: 1rem; border-radius: 5px; }
     .result { background: #e8f5e9; color: #388e3c; }
     .error { background: #ffebee; color: #d32f2f; }
-    .progress-header { margin-bottom: 2rem; }
-    .progress-steps { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .step { display: flex; align-items: center; flex: 1; }
-    .step-number { width: 30px; height: 30px; border-radius: 50%; background: #ddd; color: #666; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
-    .step.active .step-number { background: #1976d2; color: white; }
-    .step.completed .step-number { background: #4caf50; color: white; }
-    .step-text { font-size: 0.9rem; color: #666; }
-    .step.active .step-text { color: #1976d2; font-weight: 600; }
-    .step.completed .step-text { color: #4caf50; }
-    .progress-line { height: 2px; background: #ddd; flex: 1; margin: 0 10px; }
-    .progress-line.completed { background: #4caf50; }
-    #nextButton { margin-top: 15px; padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-    #nextButton:hover { background: #218838; }
-    /* JD Form Styles */
-    #jdForm { max-width: 700px; margin: 2rem auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    #jdForm h2 { text-align: center; color: #333; }
-    #jdForm label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
-    #jdForm input, #jdForm textarea, #jdForm select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    #jdForm textarea { resize: vertical; min-height: 70px; }
-    #jdForm button { margin-top: 20px; background: #007bff; color: white; padding: 10px 18px; border: none; border-radius: 4px; cursor: pointer; }
-    #jdForm button:hover { background: #0056b3; }
+    .success-actions { margin-top: 2rem; text-align: center; }
+    .success-actions .btn { display: inline-block; padding: 12px 24px; margin: 0 10px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; border: none; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; }
+    .success-actions .btn:hover { background: #5a6fd8; transform: translateY(-2px); }
+    .success-actions .btn-primary { background: #28a745; }
+    .success-actions .btn-primary:hover { background: #218838; }
     @media (max-width: 450px) {
       .container { padding: 1rem; }
       h2 { font-size: 1.3rem; }
-      .progress-steps { flex-direction: column; gap: 10px; }
-      .progress-line { display: none; }
+      .success-actions .btn { display: block; margin: 10px 0; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="progress-header">
-      <div class="progress-steps">
-        <div class="step active" id="step1">
-          <div class="step-number">1</div>
-          <div class="step-text">Company Registration</div>
-        </div>
-        <div class="progress-line" id="progressLine"></div>
-        <div class="step" id="step2">
-           <div class="step-number">2</div>
-           <div class="step-text">Upload JD</div>
-         </div>
-        <div class="progress-line" id="progressLine2"></div>
-        <div class="step" id="step3">
-          <div class="step-number">3</div>
-          <div class="step-text">Create JD Form</div>
-        </div>
-      </div>
-    </div>
     <form id="infoForm">
       <h2>Company Registration</h2>
       <label>Company Name</label>
@@ -75,222 +40,67 @@
       <input name="contact_person" required>
       <label>Contact Number</label>
       <input name="contact_number" type="tel" required>
-      <button type="submit">Submit</button>
+      <button type="submit">Register Company</button>
       <div id="infoError" class="error hidden"></div>
     </form>
 
-    <form id="uploadForm" class="hidden" enctype="multipart/form-data">
-      <h2>Upload JD</h2>
-      <input type="file" name="jd_doc" accept="application/pdf,text/plain" required>
-      <input type="hidden" name="client_id" id="client_id">
-      <button type="submit">Upload JD (PDF or TXT)</button>
-      <div id="uploadError" class="error hidden"></div>
-      <div id="pdfResult" class="result hidden"></div>
-      <button id="nextButton" class="hidden" onclick="showJDForm()">Next: Create JD Form</button>
-    </form>
-
-    <form id="jdForm" class="hidden">
-      <h2>Position Information Form</h2>
-
-      <!-- 1. Location -->
-      <label for="location">1. Location of the position</label>
-      <input type="text" id="location" name="location" required>
-
-      <!-- 2. Team Structure -->
-      <label for="team">2. Team structure/size, line managers, number of subordinates</label>
-      <textarea id="team" name="team"></textarea>
-
-      <!-- 3. Position Type -->
-      <label for="positionType">3. Position type</label>
-      <select id="positionType" name="positionType" required>
-        <option value="">-- Select --</option>
-        <option value="new">New</option>
-        <option value="replacement">Replacement</option>
-      </select>
-
-      <!-- New: Reason -->
-      <div id="newFields" class="hidden">
-        <label for="newReason">Reason (for new position)</label>
-        <textarea id="newReason" name="newReason"></textarea>
+    <div id="successMessage" class="result hidden">
+      <h3>Company registered successfully!</h3>
+      <p>Company ID: <strong id="companyId"></strong></p>
+      <div class="success-actions">
+        <a href="/companies.html" class="btn">View All Companies</a>
+        <a href="#" id="createJdBtn" class="btn btn-primary">Create JD for this Company</a>
       </div>
+    </div>
 
-      <!-- Replacement Fields -->
-      <div id="replacementFields" class="hidden">
-        <label for="reasonLeave">Reason of leave of the last person</label>
-        <textarea id="reasonLeave" name="reasonLeave"></textarea>
-
-        <label for="backgroundLast">Background of the last person</label>
-        <textarea id="backgroundLast" name="backgroundLast"></textarea>
-
-        <label for="complimentsConcerns">Compliments or concerns of the last person</label>
-        <textarea id="complimentsConcerns" name="complimentsConcerns"></textarea>
-      </div>
-
-      <!-- 4. Hiring History -->
-      <label for="hiringWhen">4a. Hiring History - When to open</label>
-      <input type="text" id="hiringWhen" name="hiringWhen">
-
-      <label for="hiringProblems">4b. Problems of the last interviews</label>
-      <textarea id="hiringProblems" name="hiringProblems"></textarea>
-
-      <!-- 5. Emergency Level -->
-      <label for="emergency">5. Emergency levels</label>
-      <select id="emergency" name="emergency">
-        <option value="">-- Select --</option>
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-        <option value="critical">Critical</option>
-      </select>
-
-      <!-- 6. Interview Rounds -->
-      <label for="interview">6. Interview rounds, interviewers (name, title, bio)</label>
-      <textarea id="interview" name="interview"></textarea>
-
-      <!-- 7. Compensation -->
-      <label for="compensation">7. Compensation structure, salary range</label>
-      <textarea id="compensation" name="compensation"></textarea>
-
-      <button type="submit">Submit</button>
-    </form>
   </div>
 
   <script>
-    // === CONFIG: Replace with your n8n webhook URLs! ===
-    const WEBHOOK_INFO = 'http://107.182.26.178:5678/webhook/50a10b2d-8744-4594-a970-8f1c6c5a997e';
-    const WEBHOOK_PDF  = 'http://107.182.26.178:5678/webhook/39e31a92-4f74-4380-b480-4c997a6d01aa';
-
-    // --- Step 1: Company Info ---
     const infoForm = document.getElementById('infoForm');
     const infoError = document.getElementById('infoError');
-    const uploadForm = document.getElementById('uploadForm');
-    const clientIdInput = document.getElementById('client_id');
+    const successMessage = document.getElementById('successMessage');
+    const companyIdEl = document.getElementById('companyId');
+    const createJdBtn = document.getElementById('createJdBtn');
 
     infoForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       infoError.classList.add('hidden');
-      infoForm.querySelector('button').disabled = true;
+      const submitButton = infoForm.querySelector('button');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Registering...';
+      
       const formData = new FormData(infoForm);
       const data = Object.fromEntries(formData.entries());
 
       try {
-        let res = await fetch(WEBHOOK_INFO, {
+        const res = await fetch('/api/company-registration', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
-        let result = await res.json();
+        const result = await res.json();
 
-        if (!res.ok || !result.client_id) throw new Error(result.message || "Registration failed.");
-        // Show PDF upload, hide info form
-        infoForm.classList.add('hidden');
-        uploadForm.classList.remove('hidden');
-        clientIdInput.value = result.client_id;
+        if (!res.ok || !result.success || !result.company_id) {
+          throw new Error(result.message || "Registration failed.");
+        }
         
-        // Update progress indicators
-        document.getElementById('step1').classList.remove('active');
-        document.getElementById('step1').classList.add('completed');
-        document.getElementById('step2').classList.add('active');
-        document.getElementById('progressLine').classList.add('completed');
+        // Show success message
+        infoForm.classList.add('hidden');
+        successMessage.classList.remove('hidden');
+        companyIdEl.textContent = result.company_id;
+        
+        // Set up create JD button
+        createJdBtn.href = `/create-jd.html?company_id=${result.company_id}`;
         
         window.scrollTo({top: 0, behavior: 'smooth'});
       } catch (err) {
         infoError.textContent = err.message;
         infoError.classList.remove('hidden');
       } finally {
-        infoForm.querySelector('button').disabled = false;
+        submitButton.disabled = false;
+        submitButton.textContent = 'Register Company';
       }
     });
-
-    // --- Step 2: PDF Upload ---
-    const uploadError = document.getElementById('uploadError');
-    const pdfResult = document.getElementById('pdfResult');
-    uploadForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      uploadError.classList.add('hidden');
-      pdfResult.classList.add('hidden');
-      uploadForm.querySelector('button').disabled = true;
-
-      const formData = new FormData(uploadForm);
-
-      try {
-        let res = await fetch(WEBHOOK_PDF, {
-          method: 'POST',
-          body: formData,
-        });
-        let result = await res.json();
-
-        if (!res.ok) throw new Error(result.message || "PDF processing failed.");
-        
-        // Extract and display the Location value from JSON response
-        if (result.Feedback) {
-          try {
-            const feedbackData = JSON.parse(result.Feedback);
-            console.log('Parsed feedbackData:', feedbackData);
-            // Store feedbackData globally for navigation
-            globalFeedbackData = feedbackData;
-            if (feedbackData.Location) {
-              pdfResult.textContent = "Location: " + feedbackData.Location;
-            } else {
-              pdfResult.textContent = "Feedback: " + JSON.stringify(feedbackData, null, 2);
-            }
-          } catch (e) {
-            pdfResult.textContent = result.Feedback;
-          }
-        } else {
-          pdfResult.textContent = typeof result === "object" ? JSON.stringify(result, null, 2) : result;
-        }
-        pdfResult.classList.remove('hidden');
-        document.getElementById('nextButton').classList.remove('hidden');
-      } catch (err) {
-        uploadError.textContent = err.message;
-        uploadError.classList.remove('hidden');
-      } finally {
-        uploadForm.querySelector('button').disabled = false;
-      }
-    });
-
-    // Global variable to store feedbackData
-    let globalFeedbackData = null;
-
-    function showJDForm() {
-      // Hide upload form and show JD form
-      uploadForm.classList.add('hidden');
-      document.getElementById('jdForm').classList.remove('hidden');
-      
-      // Update progress indicators
-      document.getElementById('step2').classList.remove('active');
-      document.getElementById('step2').classList.add('completed');
-      document.getElementById('step3').classList.add('active');
-      document.getElementById('progressLine2').classList.add('completed');
-      
-      // Pre-fill location if available from feedbackData
-      if (globalFeedbackData && globalFeedbackData.Location) {
-        document.getElementById('location').value = globalFeedbackData.Location;
-      }
-      
-      window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-
-    // JD Form position type handler
-     document.addEventListener('DOMContentLoaded', function() {
-       const positionType = document.getElementById("positionType");
-       const newFields = document.getElementById("newFields");
-       const replacementFields = document.getElementById("replacementFields");
-
-       positionType.addEventListener("change", function() {
-         if (this.value === "new") {
-           newFields.classList.remove("hidden");
-           replacementFields.classList.add("hidden");
-         } else if (this.value === "replacement") {
-           replacementFields.classList.remove("hidden");
-           newFields.classList.add("hidden");
-         } else {
-           newFields.classList.add("hidden");
-           replacementFields.classList.add("hidden");
-         }
-       });
-     });
   </script>
 </body>
 </html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Management - HR JD System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .nav-buttons {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin-right: 10px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .companies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .company-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .company-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .company-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .company-info {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .company-info strong {
+            color: #333;
+        }
+
+        .company-actions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .company-id {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .created-date {
+            font-size: 0.85rem;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Company Management</h1>
+            <p>Manage registered company information</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/" class="btn">Back to Home</a>
+            <a href="/registration.html" class="btn btn-success">Register New Company</a>
+        </div>
+
+        <div class="content">
+            <div id="loading" class="loading">
+                <p>Loading company list...</p>
+            </div>
+
+            <div id="companies-container" class="companies-grid" style="display: none;">
+                <!-- Company cards will be dynamically generated here -->
+            </div>
+
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <h3>No Companies</h3>
+                <p>No companies have been registered yet. Click the button above to register your first company.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时获取公司列表
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCompanies();
+        });
+
+        async function loadCompanies() {
+            try {
+                const response = await fetch('/api/companies');
+                const result = await response.json();
+
+                const loadingEl = document.getElementById('loading');
+                const containerEl = document.getElementById('companies-container');
+                const emptyStateEl = document.getElementById('empty-state');
+
+                loadingEl.style.display = 'none';
+
+                if (result.success && result.data && result.data.length > 0) {
+                    containerEl.style.display = 'grid';
+                    renderCompanies(result.data);
+                } else {
+                    emptyStateEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to load company list:', error);
+                document.getElementById('loading').innerHTML = '<p style="color: red;">Loading failed, please refresh the page and try again</p>';
+            }
+        }
+
+        function renderCompanies(companies) {
+            const container = document.getElementById('companies-container');
+            container.innerHTML = '';
+
+            companies.forEach(company => {
+                const companyCard = createCompanyCard(company);
+                container.appendChild(companyCard);
+            });
+        }
+
+        function createCompanyCard(company) {
+            const card = document.createElement('div');
+            card.className = 'company-card';
+
+            const createdDate = new Date(company.created_at).toLocaleDateString('en-US');
+
+            card.innerHTML = `
+                <div class="company-name">${company.company_name}</div>
+                <div class="company-info">
+                    <strong>Company ID:</strong> <span class="company-id">${company.company_id}</span>
+                </div>
+                <div class="company-info">
+                    <strong>Website:</strong> <a href="${company.website}" target="_blank">${company.website}</a>
+                </div>
+                <div class="company-info">
+                    <strong>Contact Person:</strong> ${company.contact_person}
+                </div>
+                <div class="company-info">
+                    <strong>Contact Number:</strong> ${company.contact_number}
+                </div>
+                <div class="company-info created-date">
+                    <strong>Registration Date:</strong> ${createdDate}
+                </div>
+                <div class="company-actions">
+                    <button class="btn btn-primary btn-sm" onclick="viewJDs('${company.company_id}')">
+                        View JD List
+                    </button>
+                    <button class="btn btn-info btn-sm" onclick="createJD('${company.company_id}')">
+                        Create New JD
+                    </button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function viewJDs(companyId) {
+            window.location.href = `/jds.html?company_id=${companyId}`;
+        }
+
+        function createJD(companyId) {
+            window.location.href = `/create-jd.html?company_id=${companyId}`;
+        }
+    </script>
+</body>
+</html>

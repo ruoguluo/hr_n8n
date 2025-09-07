@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create JD - HR JD System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .company-info {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .company-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .company-id {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .nav-buttons {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin-right: 10px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .conditional-fields {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .conditional-fields.show {
+            display: block;
+        }
+
+        .submit-btn {
+            background: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        .form-help {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .file-upload-container {
+            position: relative;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            margin: 0;
+            font-weight: normal;
+        }
+
+        .file-upload-label:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .file-upload-icon {
+            font-size: 2rem;
+            margin-right: 10px;
+        }
+
+        .file-upload-text {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #e8f5e9;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: #155724;
+            flex: 1;
+        }
+
+        .file-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+        }
+
+        .file-remove:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Create JD</h1>
+            <p>Create new job description for company</p>
+        </div>
+
+        <div class="company-info" id="company-info" style="display: none;">
+            <div class="company-name" id="company-name">Loading...</div>
+            <div>Company ID: <span class="company-id" id="company-id">-</span></div>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/companies.html" class="btn btn-secondary">Back to Company List</a>
+            <a href="#" id="view-jds-btn" class="btn" style="display: none;">View Company JDs</a>
+        </div>
+
+        <div class="form-container">
+            <div id="loading" class="loading">
+                <p>Loading company information...</p>
+            </div>
+
+            <div id="error-message" class="error hidden"></div>
+            <div id="success-message" class="success hidden"></div>
+
+            <form id="jd-form" style="display: none;">
+                <div class="form-group">
+                    <label for="jd_file">Upload JD Document (Optional)</label>
+                    <div class="file-upload-container">
+                        <input type="file" id="jd_file" name="jd_file" accept=".pdf,.txt" class="file-input">
+                        <label for="jd_file" class="file-upload-label">
+                            <span class="file-upload-icon">📄</span>
+                            <span class="file-upload-text">Choose PDF or TXT file</span>
+                        </label>
+                        <div class="file-info" id="file-info" style="display: none;">
+                            <span class="file-name" id="file-name"></span>
+                            <button type="button" class="file-remove" id="file-remove">✕</button>
+                        </div>
+                    </div>
+                    <div class="form-help">Upload an existing job description document (PDF or TXT format, max 10MB)</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="job_title">Job Title <span class="required">*</span></label>
+                    <input type="text" id="job_title" name="job_title" required placeholder="e.g. Senior Software Engineer, Marketing Manager">
+                    <div class="form-help">Enter the official job title for this position</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Position Location <span class="required">*</span></label>
+                    <input type="text" id="location" name="location" required>
+                    <div class="form-help">Please enter the work location for this position</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="team_structure">Team Structure</label>
+                    <textarea id="team_structure" name="team_structure" placeholder="Please describe team size, reporting relationships, number of subordinates, etc."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="position_type">Position Type <span class="required">*</span></label>
+                        <select id="position_type" name="position_type" required>
+                            <option value="">Please select</option>
+                            <option value="new">New Position</option>
+                            <option value="replacement">Replacement Position</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emergency_level">Emergency Level <span class="required">*</span></label>
+                        <select id="emergency_level" name="emergency_level" required>
+                            <option value="">Please select</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Conditional fields for new position -->
+                <div id="new-position-fields" class="conditional-fields">
+                    <div class="form-group">
+                        <label for="new_reason">Reason for New Position</label>
+                        <textarea id="new_reason" name="new_reason" placeholder="Please explain why this new position is needed"></textarea>
+                    </div>
+                </div>
+
+                <!-- Conditional fields for replacement position -->
+                <div id="replacement-fields" class="conditional-fields">
+                    <div class="form-group">
+                        <label for="reason_leave">Reason for Leaving</label>
+                        <textarea id="reason_leave" name="reason_leave" placeholder="Please explain why the previous person left"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="background_last">Previous Person's Background</label>
+                        <textarea id="background_last" name="background_last" placeholder="Please describe the previous person's work background and experience"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compliments_concerns">Previous Person's Evaluation</label>
+                        <textarea id="compliments_concerns" name="compliments_concerns" placeholder="Compliments or concerns about the previous person"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="hiring_when">Hiring Timeline</label>
+                        <input type="text" id="hiring_when" name="hiring_when" placeholder="e.g., Start immediately, next month, etc.">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compensation">Compensation Range</label>
+                        <input type="text" id="compensation" name="compensation" placeholder="e.g., $80-120K, $150-250K annually, etc.">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="hiring_problems">Previous Hiring Issues</label>
+                    <textarea id="hiring_problems" name="hiring_problems" placeholder="Problems or difficulties encountered in previous interviews"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="interview_rounds">Interview Rounds</label>
+                    <textarea id="interview_rounds" name="interview_rounds" placeholder="Please describe interview rounds, interviewer information (name, position, brief introduction)"></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submit-btn">
+                    Create JD
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentCompanyId = null;
+
+        // 页面加载时获取公司信息
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentCompanyId = urlParams.get('company_id');
+
+            if (!currentCompanyId) {
+                showError('Missing company ID parameter');
+                return;
+            }
+
+            loadCompanyInfo();
+            setupFormHandlers();
+        });
+
+        async function loadCompanyInfo() {
+            try {
+                const response = await fetch(`/api/company-registration/${currentCompanyId}`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const companyInfoEl = document.getElementById('company-info');
+                    const companyNameEl = document.getElementById('company-name');
+                    const companyIdEl = document.getElementById('company-id');
+                    const viewJdsBtn = document.getElementById('view-jds-btn');
+                    const loadingEl = document.getElementById('loading');
+                    const formEl = document.getElementById('jd-form');
+
+                    companyNameEl.textContent = result.data.company_name;
+                    companyIdEl.textContent = result.data.company_id;
+                    viewJdsBtn.href = `/jds.html?company_id=${result.data.company_id}`;
+                    
+                    companyInfoEl.style.display = 'block';
+                    viewJdsBtn.style.display = 'inline-block';
+                    loadingEl.style.display = 'none';
+                    formEl.style.display = 'block';
+                } else {
+                    showError('Company does not exist');
+                }
+            } catch (error) {
+                console.error('Failed to load company information:', error);
+                showError('Failed to load company information');
+            }
+        }
+
+        function setupFormHandlers() {
+            // 职位类型变化处理
+            const positionTypeSelect = document.getElementById('position_type');
+            const newFields = document.getElementById('new-position-fields');
+            const replacementFields = document.getElementById('replacement-fields');
+
+            positionTypeSelect.addEventListener('change', function() {
+                newFields.classList.remove('show');
+                replacementFields.classList.remove('show');
+
+                if (this.value === 'new') {
+                    newFields.classList.add('show');
+                } else if (this.value === 'replacement') {
+                    replacementFields.classList.add('show');
+                }
+            });
+
+            // 文件上传处理
+            setupFileUpload();
+
+            // 表单提交处理
+            const form = document.getElementById('jd-form');
+            form.addEventListener('submit', handleFormSubmit);
+        }
+
+        function setupFileUpload() {
+            const fileInput = document.getElementById('jd_file');
+            const fileInfo = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+            const removeBtn = document.getElementById('file-remove');
+
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file type
+                    const allowedTypes = ['application/pdf', 'text/plain'];
+                    if (!allowedTypes.includes(file.type)) {
+                        showError('Please select a PDF or TXT file only.');
+                        fileInput.value = '';
+                        return;
+                    }
+
+                    // Validate file size (max 10MB)
+                    const maxSize = 10 * 1024 * 1024; // 10MB
+                    if (file.size > maxSize) {
+                        showError('File size must be less than 10MB.');
+                        fileInput.value = '';
+                        return;
+                    }
+
+                    // Show file info
+                    fileName.textContent = file.name;
+                    fileInfo.style.display = 'flex';
+                    hideMessages();
+
+                    // Send file to webhook for processing
+                    processJDDocument(file);
+                }
+            });
+
+            removeBtn.addEventListener('click', function() {
+                fileInput.value = '';
+                fileInfo.style.display = 'none';
+                clearFormFields();
+            });
+        }
+
+        async function processJDDocument(file) {
+            try {
+                // Show loading state
+                const fileName = document.getElementById('file-name');
+                const originalText = fileName.textContent;
+                fileName.textContent = originalText + ' (Processing...)';
+
+                // Create FormData and send to webhook
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('http://107.182.26.178:5678/webhook/39e31a92-4f74-4380-b480-4c997a6d01aa', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                //alert(result["result"]["location"]);
+                
+                // Parse response and fill form fields
+                fillFormFromJDData(result["result"]);
+                
+                // Reset file name display
+                fileName.textContent = originalText;
+                
+                showSuccess('JD document processed successfully! Form fields have been auto-filled.');
+                
+            } catch (error) {
+                console.error('Error processing JD document:', error);
+                showError('Failed to process JD document: ' + error.message);
+                
+                // Reset file name display
+                const fileName = document.getElementById('file-name');
+                fileName.textContent = fileName.textContent.replace(' (Processing...)', '');
+            }
+        }
+
+        function fillFormFromJDData(data) {
+            // Map common field names to form inputs
+            const fieldMappings = {
+                'job_title': ['job_title', 'title', 'position_title', 'role', 'position_name'],
+                'location': ['location', 'job_location', 'work_location', 'position_location'],
+                'team_structure': ['team_structure', 'team', 'team_size', 'reporting_structure'],
+                'position_type': ['position_type', 'job_type', 'employment_type'],
+                'emergency_level': ['emergency_level', 'urgency', 'priority'],
+                'new_reason': ['new_reason', 'reason_for_position', 'position_justification'],
+                'reason_leave': ['reason_leave', 'departure_reason', 'why_leaving'],
+                'background_last': ['background_last', 'previous_background', 'predecessor_background'],
+                'compliments_concerns': ['compliments_concerns', 'evaluation', 'performance_review'],
+                'hiring_when': ['hiring_when', 'start_date', 'timeline', 'when_to_start'],
+                'compensation': ['compensation', 'salary', 'pay_range', 'salary_range'],
+                'hiring_problems': ['hiring_problems', 'previous_issues', 'recruitment_challenges'],
+                'interview_rounds': ['interview_rounds', 'interview_process', 'interview_stages']
+            };
+
+            // Fill form fields based on the response data
+            Object.keys(fieldMappings).forEach(formField => {
+                const element = document.getElementById(formField);
+                if (element) {
+                    const possibleKeys = fieldMappings[formField];
+                    
+                    // Try to find matching data in response
+                    for (const key of possibleKeys) {
+                        if (data[key] && data[key].toString().trim()) {
+                            element.value = data[key];
+                            break;
+                        }
+                        // Also check nested objects
+                        if (data.parsed && data.parsed[key] && data.parsed[key].toString().trim()) {
+                            element.value = data.parsed[key];
+                            break;
+                        }
+                        // Check case-insensitive matches
+                        const lowerKey = key.toLowerCase();
+                        const matchingKey = Object.keys(data).find(k => k.toLowerCase() === lowerKey);
+                        if (matchingKey && data[matchingKey] && data[matchingKey].toString().trim()) {
+                            element.value = data[matchingKey];
+                            break;
+                        }
+                    }
+                }
+            });
+
+            // Handle special cases for select elements
+            handleSelectFields(data);
+        }
+
+        function handleSelectFields(data) {
+            // Handle position_type select
+            const positionTypeSelect = document.getElementById('position_type');
+            if (positionTypeSelect && data.position_type) {
+                const value = data.position_type.toLowerCase();
+                if (value.includes('new') || value.includes('additional')) {
+                    positionTypeSelect.value = 'new';
+                    document.getElementById('new-position-fields').classList.add('show');
+                } else if (value.includes('replacement') || value.includes('replace')) {
+                    positionTypeSelect.value = 'replacement';
+                    document.getElementById('replacement-fields').classList.add('show');
+                }
+            }
+
+            // Handle emergency_level select
+            const emergencySelect = document.getElementById('emergency_level');
+            if (emergencySelect && data.emergency_level) {
+                const value = data.emergency_level.toLowerCase();
+                if (['low', 'medium', 'high', 'critical'].includes(value)) {
+                    emergencySelect.value = value;
+                }
+            }
+        }
+
+        function clearFormFields() {
+            // Clear all form fields when file is removed
+            const form = document.getElementById('jd-form');
+            const inputs = form.querySelectorAll('input[type="text"], textarea, select');
+            inputs.forEach(input => {
+                if (input.id !== 'jd_file') {
+                    input.value = '';
+                }
+            });
+            
+            // Hide conditional fields
+            document.getElementById('new-position-fields').classList.remove('show');
+            document.getElementById('replacement-fields').classList.remove('show');
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submit-btn');
+            const originalText = submitBtn.textContent;
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+            
+            hideMessages();
+
+            try {
+                const formData = new FormData(e.target);
+                
+                // Always send as JSON, excluding the JD document file
+                // The file is only used for auto-filling fields via webhook
+                const data = {
+                    company_id: currentCompanyId,
+                    job_title: formData.get('job_title'),
+                    location: formData.get('location'),
+                    team_structure: formData.get('team_structure') || '',
+                    position_type: formData.get('position_type'),
+                    emergency_level: formData.get('emergency_level') || '',
+                    new_reason: formData.get('new_reason') || '',
+                    reason_leave: formData.get('reason_leave') || '',
+                    background_last: formData.get('background_last') || '',
+                    compliments_concerns: formData.get('compliments_concerns') || '',
+                    hiring_when: formData.get('hiring_when') || '',
+                    hiring_problems: formData.get('hiring_problems') || '',
+                    interview_rounds: formData.get('interview_rounds') || '',
+                    compensation: formData.get('compensation') || ''
+                };
+
+                const response = await fetch('/api/position-info', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showSuccess(`JD created successfully! JD ID: ${result.jd_id}`);
+                    
+                    // Redirect to JD list page after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = `/jds.html?company_id=${currentCompanyId}`;
+                    }, 3000);
+                } else {
+                    throw new Error(result.message || 'Failed to create JD');
+                }
+            } catch (error) {
+                console.error('Failed to create JD:', error);
+                showError('Failed to create JD: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error-message');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+            
+            // 隐藏加载和表单
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('jd-form').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('success-message');
+            successEl.textContent = message;
+            successEl.classList.remove('hidden');
+        }
+
+        function hideMessages() {
+            document.getElementById('error-message').classList.add('hidden');
+            document.getElementById('success-message').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

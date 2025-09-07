@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR JD System - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 60px 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 50px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .option-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .option-card:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .option-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .option-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .option-description {
+            color: #666;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .existing-company {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .existing-company .option-title,
+        .existing-company .option-description {
+            color: white;
+        }
+
+        .existing-company:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a42a0);
+            border-color: #667eea;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+            
+            .logo {
+                font-size: 2em;
+            }
+            
+            .option-card {
+                padding: 25px 20px;
+            }
+            
+            .option-icon {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🏢 HR JD System</div>
+        <div class="subtitle">Job Description Management System</div>
+        
+        <div class="options">
+            <a href="companies.html" class="option-card existing-company">
+                <div class="option-icon">🏢</div>
+                <div class="option-title">Select Registered Company</div>
+                <div class="option-description">View and manage job positions for registered companies, create new JDs for existing companies</div>
+            </a>
+            
+            <a href="registration.html" class="option-card">
+                <div class="option-icon">➕</div>
+                <div class="option-title">Register New Company</div>
+                <div class="option-description">Register new company information and start using the HR JD management system</div>
+            </a>
+        </div>
+        
+        <div class="footer">
+Choose an option above to start using the system
+        </div>
+    </div>
+</body>
+</html>
