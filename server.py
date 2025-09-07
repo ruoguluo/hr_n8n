@@ -477,6 +477,48 @@ def get_jd_detail(jd_id):
             cursor.close()
             connection.close()
 
+@app.route('/api/jd/<jd_id>', methods=['DELETE'])
+def delete_jd(jd_id):
+    """删除指定的JD"""
+    try:
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({'success': False, 'message': '数据库连接失败'}), 500
+        
+        cursor = connection.cursor()
+        
+        # 首先检查JD是否存在
+        check_query = "SELECT jd_id FROM position_information WHERE jd_id = %s"
+        cursor.execute(check_query, (jd_id,))
+        result = cursor.fetchone()
+        
+        if not result:
+            return jsonify({'success': False, 'message': 'JD不存在'}), 404
+        
+        # 删除JD
+        delete_query = "DELETE FROM position_information WHERE jd_id = %s"
+        cursor.execute(delete_query, (jd_id,))
+        connection.commit()
+        
+        if cursor.rowcount > 0:
+            return jsonify({
+                'success': True,
+                'message': 'JD删除成功'
+            }), 200
+        else:
+            return jsonify({'success': False, 'message': 'JD删除失败'}), 500
+        
+    except Error as e:
+        print(f"数据库操作错误: {e}")
+        return jsonify({'success': False, 'message': f'数据库错误: {str(e)}'}), 500
+    except Exception as e:
+        print(f"服务器错误: {e}")
+        return jsonify({'success': False, 'message': f'服务器错误: {str(e)}'}), 500
+    finally:
+        if connection and connection.is_connected():
+            cursor.close()
+            connection.close()
+
 def main():
     # 切换到项目目录
     script_dir = os.path.dirname(os.path.abspath(__file__))
