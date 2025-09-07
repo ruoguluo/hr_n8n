@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create JD - HR JD System</title>
+    <script src="constants.js"></script>
     <style>
         * {
             margin: 0;
@@ -457,7 +458,7 @@
 
         async function loadCompanyInfo() {
             try {
-                const response = await fetch(`/api/company-registration/${currentCompanyId}`);
+                const response = await fetch(`${API_CONFIG.ENDPOINTS.COMPANY_REGISTRATION}/${currentCompanyId}`);
                 const result = await response.json();
 
                 if (result.success && result.data) {
@@ -563,7 +564,7 @@
                 const formData = new FormData();
                 formData.append('file', file);
 
-                const response = await fetch('http://107.182.26.178:5678/webhook/39e31a92-4f74-4380-b480-4c997a6d01aa', {
+                const response = await fetch(WEBHOOK_CONFIG.JD_UPLOAD_WEBHOOK, {
                     method: 'POST',
                     body: formData
                 });
@@ -716,7 +717,7 @@
                     compensation: formData.get('compensation') || ''
                 };
 
-                const response = await fetch('/api/position-info', {
+                const response = await fetch(API_CONFIG.ENDPOINTS.POSITION_INFO, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
